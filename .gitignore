@@ -1,0 +1,18 @@
+# ===== MAVEN BUILD =====
+backend/target/
+
+# ===== FICHIERS INUTILES =====
+backend.zip
+git-push.bat
+
+# ===== PDF (cours) =====
+*.pdf
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.iml
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
