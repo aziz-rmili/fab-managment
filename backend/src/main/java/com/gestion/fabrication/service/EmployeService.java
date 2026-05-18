@@ -3,10 +3,12 @@ package com.gestion.fabrication.service;
 import com.gestion.fabrication.dto.EmployeDTO;
 import com.gestion.fabrication.entity.Employe;
 import com.gestion.fabrication.entity.Machine;
+import com.gestion.fabrication.entity.OrdreFabrication;
 import com.gestion.fabrication.exception.ResourceNotFoundException;
 import com.gestion.fabrication.mapper.EmployeMapper;
 import com.gestion.fabrication.repository.EmployeRepository;
 import com.gestion.fabrication.repository.MachineRepository;
+import com.gestion.fabrication.repository.OrdreFabricationRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -16,13 +18,16 @@ public class EmployeService {
     private final EmployeRepository employeRepository;
     private final MachineRepository machineRepository;
     private final EmployeMapper employeMapper;
+    private final OrdreFabricationRepository ordreRepository;
 
     public EmployeService(EmployeRepository employeRepository,
                           MachineRepository machineRepository,
-                          EmployeMapper employeMapper) {
+                          EmployeMapper employeMapper,
+                          OrdreFabricationRepository ordreRepository) {
         this.employeRepository = employeRepository;
         this.machineRepository = machineRepository;
         this.employeMapper = employeMapper;
+        this.ordreRepository = ordreRepository;
     }
 
     public List<EmployeDTO> getAll() {
@@ -37,7 +42,6 @@ public class EmployeService {
 
     public EmployeDTO create(EmployeDTO dto) {
         Employe employe = employeMapper.fromDto(dto);
-        // Injection de la machine si machineId est fourni
         if (dto.getMachineId() != null) {
             Machine machine = machineRepository.findById(dto.getMachineId())
                     .orElseThrow(() -> new ResourceNotFoundException("Machine non trouvée avec l'id : " + dto.getMachineId()));
@@ -65,6 +69,14 @@ public class EmployeService {
         if (!employeRepository.existsById(id)) {
             throw new ResourceNotFoundException("Employé non trouvé avec l'id : " + id);
         }
+
+        // Désassigner l'employé des ordres de fabrication liés
+        List<OrdreFabrication> ordres = ordreRepository.findByEmployeId(id);
+        for (OrdreFabrication o : ordres) {
+            o.setEmploye(null);
+            ordreRepository.save(o);
+        }
+
         employeRepository.deleteById(id);
     }
 
