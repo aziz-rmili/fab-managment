@@ -1,33 +1,28 @@
 package com.gestion.fabrication.service;
 
 import com.gestion.fabrication.dto.ProduitDTO;
+import com.gestion.fabrication.entity.OrdreFabrication;
 import com.gestion.fabrication.entity.Produit;
 import com.gestion.fabrication.exception.ResourceNotFoundException;
 import com.gestion.fabrication.mapper.ProduitMapper;
+import com.gestion.fabrication.repository.OrdreFabricationRepository;
 import com.gestion.fabrication.repository.ProduitRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-/**
- * Service Produit — couche métier.
- *
- * Cours du prof slides 12-13 :
- * "La couche service est dédiée au métier."
- * "Appliquer des traitements dictés par les règles fonctionnelles."
- *
- * C'est ici qu'on inject le repository ET le mapper (slide 25),
- * pas dans le contrôleur.
- */
 @Service
 public class ProduitService {
 
     private final ProduitRepository produitRepository;
     private final ProduitMapper produitMapper;
+    private final OrdreFabricationRepository ordreRepository;
 
-    // Injection par constructeur (bonne pratique Spring)
-    public ProduitService(ProduitRepository produitRepository, ProduitMapper produitMapper) {
+    public ProduitService(ProduitRepository produitRepository,
+                          ProduitMapper produitMapper,
+                          OrdreFabricationRepository ordreRepository) {
         this.produitRepository = produitRepository;
         this.produitMapper = produitMapper;
+        this.ordreRepository = ordreRepository;
     }
 
     public List<ProduitDTO> getAll() {
@@ -59,6 +54,11 @@ public class ProduitService {
         if (!produitRepository.existsById(id)) {
             throw new ResourceNotFoundException("Produit non trouvé avec l'id : " + id);
         }
+
+        // Supprimer d'abord tous les ordres liés à ce produit
+        List<OrdreFabrication> ordres = ordreRepository.findByProduitId(id);
+        ordreRepository.deleteAll(ordres);
+
         produitRepository.deleteById(id);
     }
 
