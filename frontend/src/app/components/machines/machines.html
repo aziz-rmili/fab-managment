@@ -34,13 +34,13 @@
           </button>
           <button class="btn-action"
             *ngIf="m.etat === 'DISPONIBLE'"
-            (click)="demarrerMaintenance(m.id!)"
+            (click)="demarrerMaintenance(m)"
             title="Démarrer maintenance">
             <i class="bi bi-tools" style="color:#f59e0b"></i>
           </button>
           <button class="btn-action"
             *ngIf="m.etat === 'EN_MAINTENANCE'"
-            (click)="terminerMaintenance(m.id!)"
+            (click)="terminerMaintenance(m)"
             title="Terminer maintenance">
             <i class="bi bi-check-circle" style="color:#22c55e"></i>
           </button>

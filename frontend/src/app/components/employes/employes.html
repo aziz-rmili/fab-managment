@@ -28,7 +28,7 @@
         </td>
         <td>{{ e.poste }}</td>
         <td>
-          <span [class]="e.machineAssignee ? 'badge-en-cours' : 'badge-en-attente'">
+          <span [class]="e.machineId ? 'badge-en-cours' : 'badge-en-attente'">
             {{ getMachineName(e) }}
           </span>
         </td>

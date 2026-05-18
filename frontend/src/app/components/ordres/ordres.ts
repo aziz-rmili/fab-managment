@@ -39,8 +39,7 @@ export class OrdresComponent implements OnInit {
     projet: '',
     quantite: 1,
     date: new Date().toISOString().split('T')[0],
-    etat: 'EN_ATTENTE',
-    produit: { id: 0 }
+    etat: 'EN_ATTENTE'
   };
 
   constructor(private api: ApiService) {}
@@ -62,8 +61,7 @@ export class OrdresComponent implements OnInit {
       projet: '',
       quantite: 1,
       date: new Date().toISOString().split('T')[0],
-      etat: 'EN_ATTENTE',
-      produit: { id: 0 }
+      etat: 'EN_ATTENTE'
     };
     this.selectedProduitId = null;
     this.selectedMachineId = null;
@@ -74,9 +72,10 @@ export class OrdresComponent implements OnInit {
   openEdit(o: OrdreFabrication) {
     this.isEditing = true;
     this.form = { ...o };
-    this.selectedProduitId = (o.produit as any)?.id ?? null;
-    this.selectedMachineId = (o.machine as any)?.id ?? null;
-    this.selectedEmployeId = (o.employe as any)?.id ?? null;
+    // Les IDs sont directement dans le DTO retourné par le backend
+    this.selectedProduitId = o.produitId ?? null;
+    this.selectedMachineId = o.machineId ?? null;
+    this.selectedEmployeId = o.employeId ?? null;
     this.showModal = true;
   }
 
@@ -86,18 +85,20 @@ export class OrdresComponent implements OnInit {
 
     const payload: OrdreFabrication = {
       ...this.form,
-      produit: { id: this.selectedProduitId },
-      machine: this.selectedMachineId ? { id: this.selectedMachineId } : undefined,
-      employe: this.selectedEmployeId ? { id: this.selectedEmployeId } : undefined
+      produitId: this.selectedProduitId,
+      machineId: this.selectedMachineId ?? undefined,
+      employeId: this.selectedEmployeId ?? undefined
     };
 
     if (this.isEditing && this.form.id) {
-      this.api.updateOrdre(this.form.id, payload).subscribe(() => {
-        this.load(); this.showModal = false; this.loading = false;
+      this.api.updateOrdre(this.form.id, payload).subscribe({
+        next: () => { this.load(); this.showModal = false; this.loading = false; },
+        error: () => { this.loading = false; }
       });
     } else {
-      this.api.createOrdre(payload).subscribe(() => {
-        this.load(); this.showModal = false; this.loading = false;
+      this.api.createOrdre(payload).subscribe({
+        next: () => { this.load(); this.showModal = false; this.loading = false; },
+        error: () => { this.loading = false; }
       });
     }
   }
@@ -112,25 +113,21 @@ export class OrdresComponent implements OnInit {
     this.api.changerEtatOrdre(id, etat).subscribe(() => this.load());
   }
 
+  // Le backend retourne produitNom directement dans le DTO
   getProduitNom(o: OrdreFabrication): string {
-    const p = this.produits.find(p => p.id === (o.produit as any)?.id);
-    return p ? p.nom : 'Produit inconnu';
+    return o.produitNom ?? '—';
   }
 
   getMachineNom(o: OrdreFabrication): string {
-    if (!(o.machine as any)?.id) return '—';
-    const m = this.machines.find(m => m.id === (o.machine as any)?.id);
-    return m ? m.nom : '—';
+    return o.machineNom ?? '—';
   }
 
   getEmployeNom(o: OrdreFabrication): string {
-    if (!(o.employe as any)?.id) return '—';
-    const e = this.employes.find(e => e.id === (o.employe as any)?.id);
-    return e ? e.nom : '—';
+    return o.employeNom ?? '—';
   }
 
   getBadgeClass(etat: string): string {
-    switch(etat) {
+    switch (etat) {
       case 'EN_ATTENTE': return 'badge-en-attente';
       case 'EN_COURS': return 'badge-en-cours';
       case 'TERMINE': return 'badge-termine';
@@ -140,7 +137,7 @@ export class OrdresComponent implements OnInit {
   }
 
   getProchainEtat(etat: string): string | null {
-    switch(etat) {
+    switch (etat) {
       case 'EN_ATTENTE': return 'EN_COURS';
       case 'EN_COURS': return 'TERMINE';
       default: return null;
@@ -148,7 +145,7 @@ export class OrdresComponent implements OnInit {
   }
 
   getProchainLabel(etat: string): string {
-    switch(etat) {
+    switch (etat) {
       case 'EN_ATTENTE': return 'Démarrer';
       case 'EN_COURS': return 'Terminer';
       default: return '';

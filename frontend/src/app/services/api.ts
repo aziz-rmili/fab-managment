@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// Les interfaces correspondent exactement aux DTOs retournés par le backend
+
 export interface Produit {
   id?: number;
   nom: string;
@@ -21,7 +23,8 @@ export interface Employe {
   id?: number;
   nom: string;
   poste: string;
-  machineAssignee?: { id: number };
+  machineId?: number;    // ID pour création/modification
+  machineNom?: string;   // Nom pour affichage (retourné par le backend)
 }
 
 export interface OrdreFabrication {
@@ -30,9 +33,12 @@ export interface OrdreFabrication {
   quantite: number;
   date: string;
   etat: string;
-  produit: { id: number };
-  machine?: { id: number };
-  employe?: { id: number };
+  produitId?: number;    // ID pour création/modification
+  produitNom?: string;   // Nom pour affichage
+  machineId?: number;
+  machineNom?: string;
+  employeId?: number;
+  employeNom?: string;
 }
 
 @Injectable({
@@ -65,9 +71,6 @@ export class ApiService {
   getMachines(): Observable<Machine[]> {
     return this.http.get<Machine[]>(`${this.baseUrl}/machines`);
   }
-  getMachinesDisponibles(): Observable<Machine[]> {
-    return this.http.get<Machine[]>(`${this.baseUrl}/machines/disponibles`);
-  }
   createMachine(m: Machine): Observable<Machine> {
     return this.http.post<Machine>(`${this.baseUrl}/machines`, m);
   }
@@ -76,12 +79,6 @@ export class ApiService {
   }
   deleteMachine(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/machines/${id}`);
-  }
-  demarrerMaintenance(id: number): Observable<Machine> {
-    return this.http.patch<Machine>(`${this.baseUrl}/machines/${id}/maintenance/debut`, {});
-  }
-  terminerMaintenance(id: number): Observable<Machine> {
-    return this.http.patch<Machine>(`${this.baseUrl}/machines/${id}/maintenance/fin`, {});
   }
 
   // ===== EMPLOYES =====
